@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from geometry import move_forward, is_collision, angle_to_point
+from geometry import move_forward, is_collision, angle_to_point, segment_collision, inflate
 
 def test_move_up():
     # 车在 (1, 1)，朝上（π/2），走 2 米，应该到 (1, 3)
@@ -29,3 +29,16 @@ def test_angle_to_point():
     # 车在 (2, 0)，朝右，点在 (2, 5)，正好在车的正上方：偏左 90°
     assert angle_to_point(2, 0, 0, 2, 5) == pytest.approx(math.pi / 2)
     assert angle_to_point(0, 0, 2*math.pi, 3, 3) == pytest.approx(math.pi / 4)
+
+
+def test_segment_collision():
+    obstacles = [(5, 0, 1)]
+    # 两个端点都不撞，但线段从圆中间穿过去：应该算撞
+    assert segment_collision((0, 0), (10, 0), obstacles) == True
+    # 线段从圆上方 3 米经过：不撞
+    assert segment_collision((0, 3), (10, 3), obstacles) == False
+
+
+def test_inflate():
+    # 半径 1 的圆膨胀 0.5 米，变成半径 1.5
+    assert inflate([(5, 5, 1)], 0.5) == [(5, 5, 1.5)]

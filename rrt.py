@@ -2,7 +2,7 @@ import math
 import random
 
 from astar import reconstruct_path
-from geometry import is_collision, move_forward
+from geometry import move_forward, segment_collision
 from pure_pursuit import nearest_index
 
 
@@ -33,11 +33,11 @@ def rrt(start, goal, obstacles, width, height, step=1.0, goal_tol=1.0, max_iter=
 
         # 第 2 块：伸一段、查碰撞、挂到树上、判终点
         new_pt = steer(near, rand_pt, step)
-        if is_collision(new_pt[0], new_pt[1], obstacles):
+        if segment_collision(near, new_pt, obstacles):
             continue
         nodes.append(new_pt)
         parent[new_pt] = near
-        if math.hypot(goal[0] - new_pt[0], goal[1] - new_pt[1]) <= goal_tol:
+        if math.hypot(goal[0] - new_pt[0], goal[1] - new_pt[1]) <= goal_tol and not segment_collision(new_pt, goal, obstacles):
             if new_pt != goal:
                 parent[goal] = new_pt
             return reconstruct_path(parent, start, goal), nodes, parent
@@ -61,7 +61,7 @@ def rrt_star(start, goal, obstacles, width, height, step=1.0, goal_tol=1.0, radi
         j = nearest_index(rand_pt[0], rand_pt[1], nodes)
         near = nodes[j]
         new_pt = steer(near, rand_pt, step)
-        if is_collision(new_pt[0], new_pt[1], obstacles):
+        if segment_collision(near, new_pt, obstacles):
             continue
         # 已经在树上的点不再加
         if new_pt in parent:
@@ -72,7 +72,7 @@ def rrt_star(start, goal, obstacles, width, height, step=1.0, goal_tol=1.0, radi
         best_cost = cost[near] + math.hypot(new_pt[0] - near[0], new_pt[1] - near[1])
         for node in nodes:
             d = math.hypot(new_pt[0] - node[0], new_pt[1] - node[1])
-            if d <= radius and cost[node] + d < best_cost:
+            if d <= radius and cost[node] + d < best_cost and not segment_collision(node, new_pt, obstacles):
                 best_parent = node
                 best_cost = cost[node] + d
         nodes.append(new_pt)
@@ -81,7 +81,7 @@ def rrt_star(start, goal, obstacles, width, height, step=1.0, goal_tol=1.0, radi
         # 第 2 块：重新连线
         for node in nodes:
             d = math.hypot(node[0] - new_pt[0], node[1] - new_pt[1])
-            if d <= radius and cost[new_pt] + d < cost[node]:
+            if d <= radius and cost[new_pt] + d < cost[node] and not segment_collision(new_pt, node, obstacles):
                 parent[node] = new_pt
                 cost[node] = cost[new_pt]+d
     # 第 3 块：在终点附近挑最省的点
@@ -89,7 +89,7 @@ def rrt_star(start, goal, obstacles, width, height, step=1.0, goal_tol=1.0, radi
     best_total = float("inf")
     for node in nodes:
         d = math.hypot(goal[0] - node[0], goal[1] - node[1])
-        if d <= goal_tol and cost[node] + d < best_total:
+        if d <= goal_tol and cost[node] + d < best_total and not segment_collision(node, goal, obstacles):
             best_end = node
             best_total = cost[node] + d
     if best_end is None:

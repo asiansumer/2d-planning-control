@@ -31,3 +31,21 @@ def wrap_angle(a):
     while a < -math.pi:
         a = a + 2*math.pi
     return a
+
+
+def segment_collision(p1, p2, obstacles, step=0.1):
+    """线段 p1→p2 撞不撞障碍物：沿线段每隔 step 米取一个点检查，有一个点撞到就返回 True。"""
+    dist = math.hypot(p2[0] - p1[0], p2[1] - p1[1])
+    n = max(1, math.ceil(dist / step))
+    for k in range(n + 1):
+        t = k / n
+        x = p1[0] + t * (p2[0] - p1[0])
+        y = p1[1] + t * (p2[1] - p1[1])
+        if is_collision(x, y, obstacles):
+            return True
+    return False
+
+
+def inflate(obstacles, margin):
+    """障碍物膨胀：每个圆的半径都加大 margin 米，给车身留出安全距离。"""
+    return [(cx, cy, r + margin) for cx, cy, r in obstacles]
