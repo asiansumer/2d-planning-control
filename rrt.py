@@ -43,3 +43,57 @@ def rrt(start, goal, obstacles, width, height, step=1.0, goal_tol=1.0, max_iter=
             return reconstruct_path(parent, start, goal), nodes, parent
 
     return None, nodes, parent    # 撒完 max_iter 次还没到：没找到
+
+
+
+def rrt_star(start, goal, obstacles, width, height, step=1.0, goal_tol=1.0, radius=2.0, max_iter=2000):
+    """RRT*：和 RRT 一样长树，但新点会挑最省的父节点，还会帮邻居重新连线。"""
+    nodes = [start]
+    parent: dict = {start: None}
+    cost = {start: 0.0}
+
+    for i in range(max_iter):
+        # 撒点、找最近、伸一段、查碰撞：和 rrt 一样
+        if random.random() < 0.1:
+            rand_pt = goal
+        else:
+            rand_pt = (random.uniform(0, width), random.uniform(0, height))
+        j = nearest_index(rand_pt[0], rand_pt[1], nodes)
+        near = nodes[j]
+        new_pt = steer(near, rand_pt, step)
+        if is_collision(new_pt[0], new_pt[1], obstacles):
+            continue
+        # 已经在树上的点不再加
+        if new_pt in parent:
+            continue
+
+        # 第 1 块：选父节点
+        best_parent = near
+        best_cost = cost[near] + math.hypot(new_pt[0] - near[0], new_pt[1] - near[1])
+        for node in nodes:
+            d = math.hypot(new_pt[0] - node[0], new_pt[1] - node[1])
+            if d <= radius and cost[node] + d < best_cost:
+                best_parent = node
+                best_cost = cost[node] + d
+        nodes.append(new_pt)
+        parent[new_pt] = best_parent
+        cost[new_pt] = best_cost
+        # 第 2 块：重新连线
+        for node in nodes:
+            d = math.hypot(node[0] - new_pt[0], node[1] - new_pt[1])
+            if d <= radius and cost[new_pt] + d < cost[node]:
+                parent[node] = new_pt
+                cost[node] = cost[new_pt]+d
+    # 第 3 块：在终点附近挑最省的点
+    best_end = None
+    best_total = float("inf")
+    for node in nodes:
+        d = math.hypot(goal[0] - node[0], goal[1] - node[1])
+        if d <= goal_tol and cost[node] + d < best_total:
+            best_end = node
+            best_total = cost[node] + d
+    if best_end is None:
+        return None, nodes, parent
+    if best_end != goal:
+        parent[goal] = best_end
+    return reconstruct_path(parent, start, goal), nodes, parent
