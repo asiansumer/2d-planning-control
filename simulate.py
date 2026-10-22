@@ -13,7 +13,7 @@ def simulate(path, obstacles, v_cruise=5.0, dt=0.1, L=2.5, max_time=60.0,
     """让车沿着 path 开：Pure Pursuit 管方向盘，PI 管油门，自行车模型算下一步位置。
 
     返回 (log, result)：
-    log 是每一步的记录（t, x, y, theta, v, err）；
+    log 是每一步的记录（t, x, y, theta, v, err，预瞄点 tx/ty，这一步撞没撞 hit）；
     result 是统计结果（是否到达、用时、平均/最大横向误差、是否碰撞）。
     """
     # 车放在路线起点，车头朝向路线的第一段
@@ -27,7 +27,8 @@ def simulate(path, obstacles, v_cruise=5.0, dt=0.1, L=2.5, max_time=60.0,
     # idx：车已经开到路线上的哪个点，只往前找，不回头
     idx = 0
 
-    log = {"t": [0.0], "x": [x], "y": [y], "theta": [theta], "v": [v], "err": [0.0]}
+    log = {"t": [0.0], "x": [x], "y": [y], "theta": [theta], "v": [v], "err": [0.0],
+           "tx": [x], "ty": [y], "hit": [False]}
     t = 0.0
     reached = False
     collided = False
@@ -61,7 +62,8 @@ def simulate(path, obstacles, v_cruise=5.0, dt=0.1, L=2.5, max_time=60.0,
 
         # 4. 记录：横向误差 = 车到路线的最短距离
         err = distance_to_path(x, y, path)
-        if is_collision(x, y, body_obstacles):
+        hit = is_collision(x, y, body_obstacles)
+        if hit:
             collided = True
         log["t"].append(t)
         log["x"].append(x)
@@ -69,6 +71,9 @@ def simulate(path, obstacles, v_cruise=5.0, dt=0.1, L=2.5, max_time=60.0,
         log["theta"].append(theta)
         log["v"].append(v)
         log["err"].append(err)
+        log["tx"].append(tx)
+        log["ty"].append(ty)
+        log["hit"].append(hit)
 
     errs = log["err"][1:]
     result = {
