@@ -71,7 +71,7 @@ for scn in [narrow(), u_turn(), random_obstacles()]:
     if path is None:
         print(scn["name"], "没找到路")
         continue
-    log, result = simulate(path, scn["obstacles"], car_radius=CAR_RADIUS, v_cruise=8)
+    log, result = simulate(path, scn["obstacles"], car_radius=CAR_RADIUS)
     print(scn["name"].ljust(9),
           str(round(path_length(path), 1)).rjust(8),
           str(result["time"]).rjust(8),
