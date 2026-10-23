@@ -4,7 +4,7 @@ from path_utils import densify, distance_to_path, path_length, point_to_segment,
 
 
 def test_path_length():
-    # (0,0) → (3,0) → (3,4)：3 + 4 = 7
+    # (0, 0) → (3, 0) → (3, 4)：3 + 4 = 7
     assert path_length([(0, 0), (3, 0), (3, 4)]) == pytest.approx(7)
 
 

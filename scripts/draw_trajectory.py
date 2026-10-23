@@ -1,23 +1,28 @@
+"""第 2 关：用自行车模型连续走 63 步，画出轨迹（转角固定时是一个圆）。
+
+运行：python -m scripts.draw_trajectory
+"""
 import math
 
 import matplotlib.pyplot as plt
 
 from bicycle import step
 
-x, y, theta = 0, 0, 0     # 起点：原点，朝右
-v = 2.5                   # 车速
-delta = math.pi / 4       # 方向盘左转 45°
+# 从原点出发，车头朝右
+x, y, theta = 0, 0, 0
+v = 2.5
+# 前轮左转 45°
+delta = math.pi / 4
 
-xs = [x]                  # 记下每一步的 x，先放进起点
-ys = [y]                  # 记下每一步的 y
-
+xs = [x]
+ys = [y]
 for i in range(63):
-    x, y, theta = step(x, y, theta, v, delta)   # 走一步，用新状态覆盖旧状态
-    xs.append(x)       # 把新的 x 记下来
-    ys.append(y)       # 把新的 y 记下来
+    x, y, theta = step(x, y, theta, v, delta)
+    xs.append(x)
+    ys.append(y)
 
 fig, ax = plt.subplots()
-ax.plot(xs, ys, "b-")     # 把所有点连成线
+ax.plot(xs, ys, "b-")
 ax.set_aspect("equal")
 ax.grid(True)
 plt.show()

@@ -1,3 +1,8 @@
+"""第 7 关：三个场景（窄道、U 弯、随机障碍）完整跑一遍：规划 → 跟踪 → 统计。
+
+打印结果表，并把每个场景的静态图和动图存到 results/。
+运行：python -m scripts.run_scenarios
+"""
 import math
 import os
 
@@ -15,7 +20,7 @@ OUT_DIR = "results"
 
 
 def draw_map(ax, scn, path, raw):
-    """画地图：障碍物（灰）、膨胀范围（虚线圈）、RRT* 原始路线（浅色）、拉直后的路线（红虚线）。"""
+    """画地图：障碍物（灰）、膨胀范围（虚线圈）、RRT* 原始路线（橙）、拉直后的路线（红虚线）。"""
     for cx, cy, r in scn["obstacles"]:
         ax.add_patch(Circle((cx, cy), r, color="gray"))
         ax.add_patch(Circle((cx, cy), r + MARGIN, fill=False, color="gray", linestyle=":", linewidth=0.6))
@@ -41,14 +46,14 @@ def save_png(scn, path, raw, log, result):
 
 
 def save_gif(scn, path, raw, log):
-    """存动图：每一帧画出车的位置（圆 = 车身，短线 = 车头朝向）和走过的轨迹。"""
+    """存动图：每帧画出车身（圆）、车头朝向（短线）和走过的轨迹。"""
     fig, ax = plt.subplots(figsize=(9, 6))
     draw_map(ax, scn, path, raw)
     trail, = ax.plot([], [], "b-", linewidth=2)
     body = Circle((log["x"][0], log["y"][0]), CAR_RADIUS, color="tab:blue", alpha=0.5)
     ax.add_patch(body)
     heading, = ax.plot([], [], "k-", linewidth=2)
-    # 每 2 步画一帧，动图不会太大
+    # 每 2 步画一帧，控制动图大小
     frames = list(range(0, len(log["x"]), 2))
 
     def update(k):

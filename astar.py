@@ -1,40 +1,49 @@
+"""格子地图上的 A* 搜索（四邻居，每步代价 1，曼哈顿距离作启发函数）。
+
+格子用 (x, y) 元组表示，blocked 是墙格子的集合。
+"""
+
+
 def neighbors(cell, blocked, width, height):
-    """返回格子 cell 上下左右四个邻居中，能走的那些（在地图内、不是墙）。"""
+    """返回 cell 上下左右四个邻居中能走的那些：在地图范围内且不是墙。"""
     x, y = cell
     result = []
-    for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:   # 右、左、上、下
+    for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
         nx, ny = x + dx, y + dy
-        if 0 <= nx < width and 0<= ny < height:
-            if (nx, ny) not in blocked:                # ② 不是墙
+        if 0 <= nx < width and 0 <= ny < height:
+            if (nx, ny) not in blocked:
                 result.append((nx, ny))
     return result
 
 
 def reconstruct_path(came_from, start, goal):
-    """从终点顺着 came_from 往回找到起点，返回从起点到终点的路线（格子列表）。"""
+    """从 goal 顺着 came_from 一路往回找到 start，返回从起点到终点的路线。
+
+    came_from[c] 记录的是“c 是从哪个格子走过来的”。
+    """
     path = [goal]
     cell = goal
-    while cell != start:          # 还没回到起点，就继续往回找
-        cell = came_from[cell]               # 这个格子是从哪来的？
+    while cell != start:
+        cell = came_from[cell]
         path.append(cell)
-    path.reverse()                # 现在是“终点→起点”，反过来变成“起点→终点”
+    path.reverse()
     return path
 
 
 def heuristic(cell, goal):
-    """估计从 cell 到 goal 还要走几步：横着差几格 + 竖着差几格。"""
+    """曼哈顿距离：横向差几格 + 纵向差几格，估计到终点还要走几步。"""
     return abs(goal[0] - cell[0]) + abs(goal[1] - cell[1])
 
 
 def astar(start, goal, blocked, width, height):
-    """在格子地图上从 start 找到 goal，返回路线（格子列表）；找不到返回 None。"""
-    # 第 1 块：三本账的初始值
+    """从 start 搜索到 goal，返回路线（格子列表）；无路可走时返回 None。"""
+    # open_set：待考察的格子；g：从起点到该格子的已知最少步数；came_from：每个格子的来处
     open_set = [start]
     g = {start: 0}
     came_from = {}
 
-    while len(open_set) > 0:      # 还有待考察的格子，就继续找
-        # 第 2 块：挑 f 最小的格子（下一步写）
+    while len(open_set) > 0:
+        # 取出 f = g + h 最小的格子
         current = open_set[0]
         for cell in open_set:
             f_cell = g[cell] + heuristic(cell, goal)
@@ -43,17 +52,17 @@ def astar(start, goal, blocked, width, height):
                 current = cell
 
         open_set.remove(current)
+        # 在取出时才判断终点，这样保证拿到的是最短路线
         if current == goal:
             return reconstruct_path(came_from, start, goal)
 
-
-        # 第 3 块：看邻居、贴纸条
         for nb in neighbors(current, blocked, width, height):
             new_g = g[current] + 1
-            if nb not in g or new_g < g[nb]:      # 第一次见到，或者这次更近
-                g[nb] = new_g                      # 更新步数
-                came_from[nb] = current            # 贴纸条：nb 是从哪来的
+            # 第一次到达这个邻居，或者找到了一条更近的路
+            if nb not in g or new_g < g[nb]:
+                g[nb] = new_g
+                came_from[nb] = current
                 if nb not in open_set:
-                    open_set.append(nb)           # 放进待考察
+                    open_set.append(nb)
 
-    return None                   # 所有能去的格子都看完了还没到终点：说明路被堵死了
+    return None

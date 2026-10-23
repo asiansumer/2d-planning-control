@@ -6,11 +6,11 @@ from bicycle import step
 
 
 def test_straight():
-    # 车在 (0, 0)，朝右（0），车速 2，方向盘回正，走一步（dt 默认 0.1）
+    # 朝右、车速 2、转角 0，走一步（dt = 0.1）：前进 0.2 米
     assert step(0, 0, 0, 2, 0) == pytest.approx((0.2, 0, 0))
 
 
 def test_turn_left():
-    # 车在 (0, 0)，朝右（0），车速 2.5，方向盘左转 45°（tan = 1），走一步（L 默认 2.5）
+    # 车速 2.5、左转 45°（tan = 1）、轴距 2.5：朝向变化 2.5 × 0.1 / 2.5 × 1 = 0.1
     new_x, new_y, new_theta = step(0, 0, 0, 2.5, math.pi / 4)
     assert new_theta == pytest.approx(0.1)

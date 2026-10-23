@@ -1,27 +1,24 @@
-import math
+"""第 6 关：同一张图、同一个随机种子，RRT 和 RRT* 左右对比。
+
+运行：python -m scripts.compare_rrt
+"""
 import random
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 
+from path_utils import path_length
 from rrt import rrt, rrt_star
 
 width, height = 20, 20
 obstacles = [(6, 6, 2), (12, 12, 3), (15, 5, 2), (6, 15, 2)]
 start = (1, 1)
 goal = (18, 18)
-
-
-def path_length(path):
-    """把路线上相邻两点的距离加起来。"""
-    length = 0.0
-    for a, b in zip(path, path[1:]):
-        length += math.hypot(b[0] - a[0], b[1] - a[1])
-    return length
+seed = 0
 
 
 def draw(ax, title, path, nodes, parent):
-    """在一个子图 ax 上画障碍物、树、路线。"""
+    """在子图 ax 上画障碍物、树和路线。"""
     for cx, cy, r in obstacles:
         ax.add_patch(Circle((cx, cy), r, color="gray"))
     for node in nodes:
@@ -36,8 +33,6 @@ def draw(ax, title, path, nodes, parent):
     ax.set_ylim(0, height)
     ax.set_aspect("equal")
 
-
-seed = 0
 
 random.seed(seed)
 path1, nodes1, parent1 = rrt(start, goal, obstacles, width, height)

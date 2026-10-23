@@ -1,10 +1,11 @@
+"""路线工具：长度、拉直、加密、横向误差。路线是 [(x, y), ...] 点列表。"""
 import math
 
 from geometry import segment_collision
 
 
 def path_length(path):
-    """路线总长：把相邻两点的距离加起来。"""
+    """路线总长：相邻两点距离之和。"""
     length = 0.0
     for a, b in zip(path, path[1:]):
         length += math.hypot(b[0] - a[0], b[1] - a[1])
@@ -12,11 +13,11 @@ def path_length(path):
 
 
 def shortcut(path, obstacles):
-    """拉直路线：从当前点出发，找最远的、能直接连过去不撞的点，中间的点全部跳过。"""
+    """拉直路线：从当前点出发，直接连到最远的、连线不撞障碍物的点，跳过中间的点。"""
     result = [path[0]]
     i = 0
     while i < len(path) - 1:
-        # 从最后一个点开始往回试，直到找到能直连的点
+        # 从最后一个点往回试，第一个能直连的就是最远的
         j = len(path) - 1
         while j > i + 1 and segment_collision(path[i], path[j], obstacles):
             j -= 1
@@ -26,7 +27,7 @@ def shortcut(path, obstacles):
 
 
 def densify(path, ds=0.2):
-    """加密路线：相邻两点之间每隔 ds 米插一个点，让 Pure Pursuit 有足够多的点可以瞄。"""
+    """加密路线：相邻两点之间每隔 ds 米插一个点，让 Pure Pursuit 有足够密的点可以瞄。"""
     result = [path[0]]
     for a, b in zip(path, path[1:]):
         dist = math.hypot(b[0] - a[0], b[1] - a[1])
@@ -43,7 +44,7 @@ def point_to_segment(p, a, b):
     seg_len2 = abx * abx + aby * aby
     if seg_len2 == 0:
         return math.hypot(p[0] - a[0], p[1] - a[1])
-    # t：p 在线段上的投影位置，0 是 a，1 是 b，超出范围就夹到 0 或 1
+    # t 是 p 在线段上的投影位置：0 对应 a，1 对应 b，超出范围就截到 [0, 1]
     t = ((p[0] - a[0]) * abx + (p[1] - a[1]) * aby) / seg_len2
     t = max(0.0, min(1.0, t))
     px, py = a[0] + t * abx, a[1] + t * aby
@@ -51,7 +52,10 @@ def point_to_segment(p, a, b):
 
 
 def distance_to_path(x, y, path):
-    """横向误差：车到整条路线的最短距离（找最近的点，再看它前后两段线段）。"""
+    """横向误差：(x, y) 到整条路线的最短距离。
+
+    先找最近的路点，再算到它前后两段线段的距离，取最小值。
+    """
     best_i = 0
     best_d = float("inf")
     for i, (px, py) in enumerate(path):

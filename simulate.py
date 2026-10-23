@@ -1,3 +1,4 @@
+"""闭环仿真：Pure Pursuit 控制转向 + PI 控制车速 + 自行车模型。"""
 import math
 
 from bicycle import step
@@ -10,11 +11,11 @@ from pure_pursuit import find_target, nearest_index, steer_to_point
 def simulate(path, obstacles, v_cruise=5.0, dt=0.1, L=2.5, max_time=60.0,
              car_radius=0.9, k_ld=0.8, ld_min=2.0, max_delta=math.radians(35),
              kp=2.0, ki=1.0, drag=0.5, goal_tol=0.5):
-    """让车沿着 path 开：Pure Pursuit 管方向盘，PI 管油门，自行车模型算下一步位置。
+    """让车沿 path 开到终点，返回 (log, result)。
 
-    返回 (log, result)：
-    log 是每一步的记录（t, x, y, theta, v, err，预瞄点 tx/ty，这一步撞没撞 hit）；
-    result 是统计结果（是否到达、用时、平均/最大横向误差、是否碰撞）。
+    log：每一步的记录，键为 t, x, y, theta, v, err（横向误差）, tx, ty（预瞄点）, hit（是否碰撞）。
+    result：reached（是否到达）, time（用时）, mean_err / max_err（平均 / 最大横向误差）, collided（是否碰撞过）。
+    车身视为半径 car_radius 的圆；预瞄距离 Ld = max(ld_min, k_ld · v)；转角限制在 ±max_delta。
     """
     # 车放在路线起点，车头朝向路线的第一段
     x, y = path[0]
@@ -22,9 +23,9 @@ def simulate(path, obstacles, v_cruise=5.0, dt=0.1, L=2.5, max_time=60.0,
     v = 0.0
     integral = 0.0
     goal = path[-1]
-    # 车身是一个半径 car_radius 的圆：车的中心点撞到“膨胀后的障碍物”，就等于车身撞到了原来的障碍物
+    # 车身是半径 car_radius 的圆：车中心进入膨胀后的障碍物，等价于车身碰到原障碍物
     body_obstacles = inflate(obstacles, car_radius)
-    # idx：车已经开到路线上的哪个点，只往前找，不回头
+    # idx：车当前对应路线上的哪个点，只往前推进，不回头
     idx = 0
 
     log = {"t": [0.0], "x": [x], "y": [y], "theta": [theta], "v": [v], "err": [0.0],
@@ -39,12 +40,12 @@ def simulate(path, obstacles, v_cruise=5.0, dt=0.1, L=2.5, max_time=60.0,
             reached = True
             break
 
-        # 1. 速度：目标车速是巡航速度，快到终点时按距离减速
+        # 1. 车速：平时按巡航速度，离终点不到 v_cruise 米时按距离减速
         target_v = min(v_cruise, 1.0 * dist_goal)
         a, integral = pi_control(target_v, v, integral, kp, ki, dt)
         v = v + (a - drag * v) * dt
 
-        # 2. 方向：只在 idx 往后的 50 个点里找最近点，防止 U 弯时跳到另一条腿上
+        # 2. 转向：只在 idx 之后的 50 个点里找最近点，防止 U 弯时跳到对面那段路上
         window = path[idx:idx + 50]
         idx = idx + nearest_index(x, y, window)
         Ld = max(ld_min, k_ld * v)
@@ -53,14 +54,14 @@ def simulate(path, obstacles, v_cruise=5.0, dt=0.1, L=2.5, max_time=60.0,
             delta = 0.0
         else:
             delta = steer_to_point(x, y, theta, tx, ty, L)
-        # 方向盘打不到无限大：限制在 ±max_delta
+        # 前轮转角有物理上限
         delta = max(-max_delta, min(max_delta, delta))
 
         # 3. 自行车模型走一步
         x, y, theta = step(x, y, theta, v, delta, dt, L)
         t = t + dt
 
-        # 4. 记录：横向误差 = 车到路线的最短距离
+        # 4. 记录这一步
         err = distance_to_path(x, y, path)
         hit = is_collision(x, y, body_obstacles)
         if hit:

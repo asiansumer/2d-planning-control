@@ -1,6 +1,6 @@
 """生成 README 里用的图和动图，全部存到 results/ 文件夹。
 
-用法（在项目根目录）：
+运行（在项目根目录）：
     python -m scripts.make_figures            生成全部
     python -m scripts.make_figures hero pid   只生成名字里列出的几张
 """
