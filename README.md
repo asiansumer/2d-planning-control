@@ -2,6 +2,8 @@
 
 [中文版](README_zh.md)
 
+[Results](#results) · [Findings](#findings) · [Run locally](#how-to-run)
+
 ![RRT* grows a tree, the path is shortened, then the car follows it](results/hero.gif)
 
 This is a small 2D self-driving simulation that I built from scratch with only NumPy and Matplotlib. The car plans a path around obstacles with RRT*, then drives it in closed loop with Pure Pursuit for steering and a PI controller for speed, on top of a kinematic bicycle model. Every function has a pytest test (30 in total).
@@ -105,7 +107,23 @@ So the final car uses PI for speed.
 
 ## How to run
 
-Python 3 with NumPy, Matplotlib and pytest. Run everything from the project root.
+The demo uses synthetic maps: no dataset, trained weights or GPU is needed. Run everything from the project root.
+
+### Set up
+
+Create a Python 3 virtual environment and install the dependencies (NumPy, Matplotlib, Pillow for GIF output, and pytest):
+
+```bash
+git clone https://github.com/asiansumer/2d-planning-control.git
+cd 2d-planning-control
+python3 -m venv .venv
+source .venv/bin/activate  # macOS / Linux
+python -m pip install -r requirements.txt
+```
+
+On Windows PowerShell, activate with `.venv\Scripts\Activate.ps1` instead. To leave the environment later, run `deactivate`.
+
+### Tests and demo
 
 Run the tests (30 of them):
 
@@ -125,6 +143,8 @@ Make all the figures in this README (about 2 minutes). Add names to make only so
 python -m scripts.make_figures
 python -m scripts.make_figures pid
 ```
+
+On a server without a display, prefix plotting commands with `MPLBACKEND=Agg`, for example `MPLBACKEND=Agg python -m scripts.run_scenarios`.
 
 ## Project structure
 

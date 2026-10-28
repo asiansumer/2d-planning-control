@@ -2,6 +2,8 @@
 
 [English](README.md)
 
+[结果](#结果) · [实验发现](#发现) · [本地运行](#怎么运行)
+
 ![RRT* 长树、路线被拉直、车沿路线开过去](results/hero.gif)
 
 这是一个我从零写的二维自动驾驶小仿真，只用了 NumPy 和 Matplotlib。车先用 RRT* 绕开障碍物规划出一条路线，再闭环开过去：转向用 Pure Pursuit，车速用 PI 控制，车本身是运动学自行车模型。每个函数都配了 pytest 测试（一共 30 个）。
@@ -105,7 +107,23 @@ RRT 一碰到终点就停，路线就是随机树碰巧长出来的样子，弯�
 
 ## 怎么运行
 
-需要 Python 3、NumPy、Matplotlib 和 pytest。所有命令都在项目根目录运行。
+演示使用程序生成的地图，不需要下载数据集、模型权重，也不需要 GPU。所有命令都在项目根目录运行。
+
+### 安装环境
+
+创建 Python 3 虚拟环境并安装依赖（NumPy、Matplotlib、导出 GIF 用的 Pillow，以及 pytest）：
+
+```bash
+git clone https://github.com/asiansumer/2d-planning-control.git
+cd 2d-planning-control
+python3 -m venv .venv
+source .venv/bin/activate  # macOS / Linux
+python -m pip install -r requirements.txt
+```
+
+Windows PowerShell 使用 `.venv\Scripts\Activate.ps1` 激活环境。之后运行 `deactivate` 即可退出虚拟环境。
+
+### 测试和演示
 
 跑测试（30 个）：
 
@@ -125,6 +143,8 @@ python -m scripts.run_scenarios
 python -m scripts.make_figures
 python -m scripts.make_figures pid
 ```
+
+没有图形界面的服务器可在绘图命令前加 `MPLBACKEND=Agg`，例如 `MPLBACKEND=Agg python -m scripts.run_scenarios`。
 
 ## 项目结构
 
