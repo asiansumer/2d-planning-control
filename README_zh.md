@@ -1,5 +1,7 @@
 # 二维规划与控制：从自行车模型到 RRT* + Pure Pursuit
 
+[![自动测试](https://github.com/asiansumer/2d-planning-control/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/asiansumer/2d-planning-control/actions/workflows/tests.yml)
+
 [English](README.md)
 
 [结果](#结果) · [实验发现](#发现) · [本地运行](#怎么运行)
@@ -130,6 +132,8 @@ Windows PowerShell 使用 `.venv\Scripts\Activate.ps1` 激活环境。之后运�
 ```bash
 python -m pytest -q
 ```
+
+[Tests 工作流](https://github.com/asiansumer/2d-planning-control/actions/workflows/tests.yml) 会在提交到 `main` 或发起 PR 时，使用 Python 3.11 自动运行这些测试，也可以在 Actions 页面手动启动。
 
 跑三个场景，会打印结果表，并保存 `results/{narrow,u_turn,random}.png/.gif`：
 

@@ -1,5 +1,7 @@
 # 2D Planning and Control: from a Bicycle Model to RRT* + Pure Pursuit
 
+[![Tests](https://github.com/asiansumer/2d-planning-control/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/asiansumer/2d-planning-control/actions/workflows/tests.yml)
+
 [中文版](README_zh.md)
 
 [Results](#results) · [Findings](#findings) · [Run locally](#how-to-run)
@@ -130,6 +132,8 @@ Run the tests (30 of them):
 ```bash
 python -m pytest -q
 ```
+
+The [Tests workflow](https://github.com/asiansumer/2d-planning-control/actions/workflows/tests.yml) runs this suite with Python 3.11 on pushes to `main` and on pull requests. It can also be started manually from the Actions tab.
 
 Run the three scenarios. This prints the results table and saves `results/{narrow,u_turn,random}.png/.gif`:
 
